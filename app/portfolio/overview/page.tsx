@@ -10,8 +10,22 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts"
 import { Stepper } from "@/components/stepper"
 import { CollapsibleControlsSidebar } from "@/components/collapsible-controls-sidebar"
-import { HelpCircle, TrendingUp, DollarSign, Shield, Building, Settings, Zap, Leaf } from "lucide-react"
+import {
+  HelpCircle,
+  TrendingUp,
+  DollarSign,
+  Shield,
+  Building,
+  Settings,
+  Zap,
+  Leaf,
+  Filter,
+  Plus,
+  X,
+} from "lucide-react"
 import type { CustomScenario } from "@/components/scenario-modal"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 const basePortfolioData = [
   { category: "Ontario", propertyCount: 45, dollarValue: 2.1, highRisk: 15, mediumRisk: 60, lowRisk: 25 },
@@ -181,6 +195,51 @@ export default function PortfolioOverviewPage() {
     ltvDirection: "↑ Increasing",
     riskExposure: "$1.2B",
   })
+
+  const [activeFilters, setActiveFilters] = useState([
+    { type: "location", label: "Toronto", value: "toronto" },
+    { type: "propertyType", label: "Office", value: "office" },
+    { type: "clientName", label: "ABC Real Estate Corp", value: "abc-real-estate-corp" },
+    { type: "energySource", label: "Natural Gas", value: "natural-gas" },
+  ])
+  const [showFilterPopover, setShowFilterPopover] = useState(false)
+  const [newFilterType, setNewFilterType] = useState("")
+  const [newFilterValue, setNewFilterValue] = useState("")
+
+  const removeFilter = (index: number) => {
+    setActiveFilters((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const addNewFilter = () => {
+    if (newFilterType && newFilterValue) {
+      const newFilter = {
+        type: newFilterType,
+        label: newFilterValue,
+        value: newFilterValue.toLowerCase().replace(/\s+/g, "-"),
+      }
+      setActiveFilters((prev) => [...prev, newFilter])
+      setNewFilterType("")
+      setNewFilterValue("")
+      setShowFilterPopover(false)
+    }
+  }
+
+  const getFilterColor = (type: string) => {
+    switch (type) {
+      case "location":
+        return { bg: "#99EFE4", color: "#112A43" }
+      case "propertyType":
+        return { bg: "#2B6CA9", color: "white" }
+      case "clientName":
+        return { bg: "#8b5cf6", color: "white" }
+      case "energySource":
+        return { bg: "#66DCCC", color: "#112A43" }
+      case "greenCertification":
+        return { bg: "#10b981", color: "white" }
+      default:
+        return { bg: "#6b7280", color: "white" }
+    }
+  }
 
   const toggleColumn = (key: string) => {
     setTableColumns((prev) => prev.map((col) => (col.key === key ? { ...col, enabled: !col.enabled } : col)))
@@ -406,6 +465,121 @@ export default function PortfolioOverviewPage() {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Active Filters Section */}
+            <Card className="rounded-2xl shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between" style={{ color: "#112A43" }}>
+                  <div className="flex items-center gap-3">
+                    <Filter className="w-6 h-6" />
+                    Active Filters ({activeFilters.length})
+                  </div>
+                  <Popover open={showFilterPopover} onOpenChange={setShowFilterPopover}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full w-8 h-8 p-0 bg-transparent hover:bg-gray-100"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">Add New Filter</h4>
+                        <div>
+                          <Label className="text-sm font-semibold mb-2 block">Filter Type</Label>
+                          <Select value={newFilterType} onValueChange={setNewFilterType}>
+                            <SelectTrigger className="rounded-full">
+                              <SelectValue placeholder="Select filter type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="location">Location</SelectItem>
+                              <SelectItem value="propertyType">Property Type</SelectItem>
+                              <SelectItem value="clientName">Client Name</SelectItem>
+                              <SelectItem value="energySource">Energy Source</SelectItem>
+                              <SelectItem value="greenCertification">Green Certification</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold mb-2 block">Filter Value</Label>
+                          <Input
+                            placeholder="Enter filter value..."
+                            value={newFilterValue}
+                            onChange={(e) => setNewFilterValue(e.target.value)}
+                            className="rounded-full"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={addNewFilter}
+                            disabled={!newFilterType || !newFilterValue}
+                            className="rounded-full flex-1"
+                            style={{ backgroundColor: "#2B6CA9" }}
+                          >
+                            Add Filter
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowFilterPopover(false)}
+                            className="rounded-full bg-transparent"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {activeFilters.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Filter className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No active filters</p>
+                    <p className="text-sm">Click the + button to add filters</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-3">
+                    {activeFilters.map((filter, index) => {
+                      const colors = getFilterColor(filter.type)
+                      return (
+                        <Badge
+                          key={index}
+                          className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow"
+                          style={{ backgroundColor: colors.bg, color: colors.color }}
+                        >
+                          {filter.label}
+                          <X
+                            className="w-4 h-4 cursor-pointer hover:opacity-70 transition-opacity"
+                            onClick={() => removeFilter(index)}
+                          />
+                        </Badge>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {activeFilters.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-sm text-gray-600">
+                      <span>
+                        Showing results for {activeFilters.length} active filter{activeFilters.length !== 1 ? "s" : ""}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setActiveFilters([])}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full"
+                      >
+                        Clear All Filters
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

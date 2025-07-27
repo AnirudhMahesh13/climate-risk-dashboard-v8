@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Home, Building, PieChart, Info, LogOut } from "lucide-react"
+import { Home, Building, PieChart, Info, LogOut, TrendingUp } from "lucide-react"
 
 export function Navigation() {
   const pathname = usePathname()
@@ -14,6 +14,7 @@ export function Navigation() {
     { href: "/", label: "Home", icon: Home },
     { href: "/asset/search", label: "Asset", icon: Building },
     { href: "/portfolio/filter", label: "Portfolio", icon: PieChart },
+    { href: "/key-insights", label: "Key Insights", icon: TrendingUp },
     { href: "/about", label: "About Us", icon: Info },
   ]
 

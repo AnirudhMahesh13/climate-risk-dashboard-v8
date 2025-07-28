@@ -15,12 +15,14 @@ import { ChevronDown, X, Upload, Download, AlertCircle, HelpCircle } from "lucid
 import { Stepper } from "@/components/stepper"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Input } from "@/components/ui/input"
 
 export default function PortfolioFilterPage() {
   const [filters, setFilters] = useState({
     country: "canada",
     province: "ontario",
     city: "toronto",
+    clientName: "", // Add client name filter
     propertyTypes: ["Office", "Retail"] as string[],
     energySources: ["Natural Gas", "Electricity"] as string[],
     emissionRange: [20, 80],
@@ -62,6 +64,9 @@ export default function PortfolioFilterPage() {
         break
       case "city":
         setFilters({ ...filters, city: "" })
+        break
+      case "clientName":
+        setFilters({ ...filters, clientName: "" })
         break
     }
   }
@@ -430,6 +435,27 @@ export default function PortfolioFilterPage() {
               </CardContent>
             </Card>
 
+            {/* Client Name Filter */}
+            <Card className="rounded-2xl shadow-lg">
+              <CardHeader>
+                <CardTitle style={{ color: "#112A43" }}>Client Name</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold mb-2 block text-gray-700">Client Name</label>
+                  <Input
+                    placeholder="Search by client name..."
+                    value={filters.clientName}
+                    onChange={(e) => setFilters({ ...filters, clientName: e.target.value })}
+                    className="rounded-full h-12"
+                  />
+                </div>
+                <div className="text-xs text-gray-500">
+                  Filter properties by their associated client or organization
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Property Types */}
             <Card className="rounded-2xl shadow-lg">
               <CardHeader>
@@ -650,6 +676,25 @@ export default function PortfolioFilterPage() {
                   </div>
                 )}
 
+                {/* Client Name Filter */}
+                {filters.clientName && (
+                  <div className="space-y-2">
+                    <div className="text-sm font-semibold text-gray-700">Client Name</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge
+                        className="rounded-full px-3 py-1 text-xs flex items-center gap-1"
+                        style={{ backgroundColor: "#8b5cf6", color: "white" }}
+                      >
+                        {filters.clientName}
+                        <X
+                          className="w-3 h-3 cursor-pointer hover:text-red-300"
+                          onClick={() => removeFilter("clientName", filters.clientName)}
+                        />
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+
                 {/* Property Types */}
                 {filters.propertyTypes.length > 0 && (
                   <div className="space-y-2">
@@ -734,6 +779,7 @@ export default function PortfolioFilterPage() {
                     {(filters.country ? 1 : 0) +
                       (filters.province ? 1 : 0) +
                       (filters.city ? 1 : 0) +
+                      (filters.clientName ? 1 : 0) + // Add client name to count
                       filters.propertyTypes.length +
                       filters.energySources.length +
                       filters.greenCertifications.length +
